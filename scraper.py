@@ -31,19 +31,24 @@ def wordListToFreqDict(wordlist):
 http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
 
 # Dictionary of attributes to scrape from websites
-attributes = {"name":["keywords", "Description"], "property":"og.description"}
+attributes = {"name":["keywords", "Description", "description"], "property":"og.description"}
+
+govUrls = ['https://medlineplus.gov/obesity.html', 'https://medlineplus.gov/weightlosssurgery.html', 'https://medlineplus.gov/weightcontrol.html']
 
 # Scrape HTML from MedlinePlus Website
-responseMedline = http.request('GET', 'https://medlineplus.gov/obesity.html')
-soupMedline = bs(responseMedline.data, 'lxml')
-# Scrape all sections with external links (class = 'section')
-sectionDivs = soupMedline.findAll('div', {'class', 'section'}) 
+sectionDivs = []
+for url in govUrls:
+	responseMedline = http.request('GET', 'https://medlineplus.gov/obesity.html')
+	soupMedline = bs(responseMedline.data, 'lxml')
+	# Scrape all sections with external links (class = 'section')
+	sectionDivs.extend(soupMedline.findAll('div', {'class', 'section'}))
 
 urls = []
 for div in sectionDivs:
 	for a in div.findAll('a', href = True):
-		if a.text != 'Spanish': # Ignore links in Spanish
+		if a.text != 'Spanish' and a['href'] not in urls: # Ignore links in Spanish and urls already in list
 			urls.append(a['href'])
+			
 
 if not os.path.isdir('outputs'):
 	os.mkdir('outputs') # Create a new directory for outputs	
@@ -71,7 +76,7 @@ for url in urls:
 # Create dict with frequency of keywords
 frequencies = wordListToFreqDict(allKeywords)
 # Remove frequent words
-frequentWords = ['the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'i', 'it', 'for', 'not', 'on', 'with', 'he', 'as', 'you', 'do', 'at', 'this', 'but', 'his', 'by', 'from', 'they', 'we', 'say', 'her', 'she', 'or', 'an', 'will', 'my']
+frequentWords = ['the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'i', 'it', 'for', 'not', 'on', 'with', 'he', 'as', 'you', 'do', 'at', 'this', 'but', 'his', 'by', 'from', 'they', 'we', 'say', 'her', 'she', 'or', 'an', 'will', 'my', 'is', 'your', 'can', 'about', 'more', 'what', 'much', 'too', 'being', 'may', 'are', 'how', 'if', 'than', 'which', ]
 for key in frequentWords:
 	frequencies.pop(key, None)
 	
