@@ -44,8 +44,9 @@ for div in sectionDivs:
 	for a in div.findAll('a', href = True):
 		if a.text != 'Spanish': # Ignore links in Spanish
 			urls.append(a['href'])
-		
-os.mkdir('outputs') # Create a new directory for outputs	
+
+if not os.path.isdir('outputs'):
+	os.mkdir('outputs') # Create a new directory for outputs	
 with open("outputs/urls.csv",'w') as file:
     wr = csv.writer(file, dialect='excel')
     for url in urls:
@@ -77,7 +78,7 @@ for key in frequentWords:
 # Convert dict to pandas dataframe
 frequenciesDF = pd.DataFrame(frequencies.items())
 frequenciesDF = frequenciesDF.sort_values(by = 1, ascending = False)
-frequenciesDF.to_csv("outputs/keywordFrequencies.csv", header = False) # Save data as .csv fkle
+frequenciesDF.to_csv("outputs/keywordFrequencies.csv", header = False, index = False) # Save data as .csv fkle
 
 # Subset 25 most frequent keywords for plotting
 plotDF = frequenciesDF.iloc[0:25]
